@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcessControl</title>
+  <link rel="icon" href="./favicon.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-fingerprint"></i>
+      <span>AcessControl</span>
+    </div>
+    <nav>
+      <div class="menu-item">
+        <div class="menu-button" onclick="showSection('dashboard-section')">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-button" onclick="toggleSubmenu('cadastro-submenu')">
+          <i class="fas fa-plus-circle"></i>
+          <span>Cadastro</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="submenu" id="cadastro-submenu">
+          <a href="#" onclick="showSection('terminals-section')">Cadastro de Terminal</a>
+          <a href="#" onclick="showSection('users-section')">Cadastro de Pessoa</a>
+          <a href="#" onclick="showSection('visitors-section')">Cadastro de Visitante</a>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-button" onclick="showSection('monitor-section')">
+          <i class="fas fa-desktop"></i>
+          <span>Monitoramento</span>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-button" onclick="showSection('config-section')">
+          <i class="fas fa-cog"></i>
+          <span>Configurações</span>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <div class="content-wrapper">
+    <header>
+      <div class="header-content">
+        <button id="sidebar-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div id="current-terminal">Terminal não selecionado</div>
+      </div>
+    </header>
+
+    <main>
+      <section id="dashboard-section">
+        <h2>Dashboard</h2>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="card-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="card-content">
+              <h3>Usuários</h3>
+              <div class="card-numbers">
+                <span id="total-users">0</span>
+                <small>cadastrados</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-icon">
+              <i class="fas fa-server"></i>
+            </div>
+            <div class="card-content">
+              <h3>Terminais</h3>
+              <div class="card-numbers">
+                <span id="total-terminals">0</span>
+                <small>cadastrados</small>
+              </div>
+              <div class="card-status">
+                <span id="online-terminals">0</span> online
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="card-content">
+              <h3>Acessos Hoje</h3>
+              <div class="card-numbers">
+                <span id="today-access">0</span>
+                <small>total</small>
+              </div>
+              <div class="card-details">
+                <span id="authorized-access">0</span> autorizados
+                <span id="denied-access">0</span> negados
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-icon">
+              <i class="fas fa-fingerprint"></i>
+            </div>
+            <div class="card-content">
+              <h3>Biometrias</h3>
+              <div class="card-numbers">
+                <span id="total-biometrics">0</span>
+                <small>cadastradas</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-charts">
+          <div class="chart-container">
+            <h3>Acessos nos Últimos 7 Dias</h3>
+            <canvas id="access-chart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="terminals-section">
+        <h2>Terminais</h2>
+        <button onclick="showTerminalModal()">Cadastrar Terminal</button>
+        <table class="terminals-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>IP</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="terminals-list">
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Terminal Form Modal -->
+      <div id="terminal-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Cadastrar Terminal</h3>
+          </div>
+          <div class="modal-body">
+            <form id="terminal-form" class="modal-form">
+              <div class="form-group">
+                <label for="terminal-name">Nome</label>
+                <input id="terminal-name" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="terminal-ip">IP</label>
+                <input id="terminal-ip" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="terminal-login">Login</label>
+                <input id="terminal-login" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="terminal-password">Senha</label>
+                <input id="terminal-password" type="password" required>
+              </div>
+              <input type="hidden" id="terminal-id">
+              <div class="action-buttons">
+                <button type="submit" class="btn-edit">Salvar</button>
+                <button type="button" onclick="closeTerminalModal()" class="btn-delete">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <section id="users-section">
+        <h2>Usuários</h2>
+        <button onclick="showUserModal()">Cadastrar Usuário</button>
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Matrícula</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="users-list">
+          </tbody>
+        </table>
+      </section>
+
+      <!-- User Form Modal -->
+      <div id="user-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Cadastrar Usuário</h3>
+          </div>
+          <div class="modal-body">
+            <form id="user-form" class="modal-form">
+              <div class="form-group">
+                <label for="user-name">Nome</label>
+                <input id="user-name" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="user-registration">Matrícula</label>
+                <input id="user-registration" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="user-password">Senha</label>
+                <input id="user-password" type="password" required>
+              </div>
+              <div class="form-group">
+                <label for="user-salt">Salt (opcional)</label>
+                <input id="user-salt" type="text">
+              </div>
+              <input type="hidden" id="user-id">
+              <div class="action-buttons">
+                <button type="submit" class="btn-edit">Salvar</button>
+                <button type="button" onclick="closeUserModal()" class="btn-delete">Cancelar</button>
+                <button type="button" id="register-bio-btn" onclick="showBiometryForm()" class="btn-bio hidden">
+                  Cadastrar Biometria
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <section id="visitors-section">
+        <h2>Visitantes</h2>
+        <button onclick="showVisitorModal()">Cadastrar Visitante</button>
+        <table class="visitors-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Registro</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="visitors-list">
+            <!-- Visitantes serão carregados aqui -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Visitor Form Modal -->
+      <div id="visitor-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Cadastrar Visitante</h3>
+          </div>
+          <div class="modal-body">
+            <form id="visitor-form" class="modal-form">
+              <div class="form-group">
+                <label for="visitor-name">Nome</label>
+                <input id="visitor-name" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="visitor-registration">Registro (CPF/RG)</label>
+                <input id="visitor-registration" type="text" required>
+              </div>
+              <div class="form-group">
+                <label for="visitor-password">Senha</label>
+                <input id="visitor-password" type="password" required>
+              </div>
+              <div class="form-group">
+                <label for="visitor-begin">Início do acesso</label>
+                <input id="visitor-begin" type="datetime-local" required>
+              </div>
+              <div class="form-group">
+                <label for="visitor-end">Fim do acesso</label>
+                <input id="visitor-end" type="datetime-local" required>
+              </div>
+              <input type="hidden" id="visitor-id">
+              <div class="action-buttons">
+                <button type="submit" class="btn-edit">Salvar</button>
+                <button type="button" onclick="closeVisitorModal()" class="btn-delete">Cancelar</button>
+                <button type="button" id="register-bio-visitor-btn" onclick="showVisitorBiometryForm()"
+                  class="btn-bio hidden">
+                  Cadastrar Biometria
+                </button>
+              </div>
+            </form>
+            <div id="visitor-msg-modal" style="margin-top:1em;color:green;"></div>
+          </div>
+        </div>
+      </div>
+
+
+      <section id="biometry-section">
+        <h2>Biometria</h2>
+        <button onclick="showBiometryForm()">Cadastrar Biometria</button>
+        <div id="biometry-form" class="hidden">
+          <select id="biometry-user-select"></select>
+          <button onclick="registerBiometry()">Cadastrar</button>
+          <button onclick="hideBiometryForm()">Cancelar</button>
+        </div>
+      </section>
+
+      <section id="config-section">
+        <h2>Configurações</h2>
+
+        <div class="config-group">
+          <h3>Gerenciamento de Usuários</h3>
+          <button onclick="getIDs()">Obter Usuários do equipamento</button>
+          <button onclick="deleteAllEquipment()">Deletar todos do equipamento</button>
+          <button onclick="clearDB()">Apagar todos do banco</button>
+          <button onclick="sendAllUsers()" class="btn-edit">Enviar Todos os Cadastros</button>
+          <button id="btnObterBiometrias">Obter Biometrias</button>
+        </div>
+
+        <div class="config-group">
+          <h3>Configurações do Terminal</h3>
+          <button onclick="showRebootConfirmation()" class="btn-warning">Reiniciar Equipamento</button>
+          <button onclick="showFactoryResetConfirmation()" class="btn-warning">Reset de Fábrica</button>
+          <button onclick="showMasterPasswordModal()" class="btn-edit">Alterar Senha Mestre</button>
+          <button onclick="showNetworkConfigModal()" class="btn-edit">Configurar Rede</button>
+          <button onclick="showMonitorConfigModal()" class="btn-edit">Configurar Monitoramento</button>
+          <button onclick="openSecbox()" class="btn-bio">Abrir Secbox</button>
+        </div>
+      </section>
+
+      <!-- Master Password Modal -->
+      <div id="master-password-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Alterar Senha Mestre</h3>
+          </div>
+          <div class="modal-body">
+            <form id="master-password-form" class="modal-form">
+              <div class="form-group">
+                <label for="master-password">Nova Senha Mestre</label>
+                <input type="password" id="master-password" required>
+              </div>
+              <div class="action-buttons">
+                <button type="submit" class="btn-edit">Salvar</button>
+                <button type="button" onclick="closeModal(this)" class="btn-delete">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Config Modal -->
+      <div id="network-config-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Configurar Rede</h3>
+          </div>
+          <div class="modal-body">
+            <form id="network-config-form" class="modal-form">
+              <div class="form-group">
+                <label for="network-ip">IP</label>
+                <input type="text" id="network-ip" required pattern="^(\d{1,3}\.){3}\d{1,3}$">
+              </div>
+              <div class="form-group">
+                <label for="network-netmask">Máscara de Rede</label>
+                <input type="text" id="network-netmask" required pattern="^(\d{1,3}\.){3}\d{1,3}$">
+              </div>
+              <div class="form-group">
+                <label for="network-gateway">Gateway</label>
+                <input type="text" id="network-gateway" required pattern="^(\d{1,3}\.){3}\d{1,3}$">
+              </div>
+              <div class="form-group">
+                <label for="network-port">Porta</label>
+                <input type="number" id="network-port" required min="1" max="65535" value="80">
+              </div>
+              <div class="action-buttons">
+                <button type="submit" class="btn-edit">Salvar</button>
+                <button type="button" onclick="closeModal(this)" class="btn-delete">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <section id="monitor-section">
+        <h2>Monitoramento</h2>
+
+        <div class="monitor-controls">
+          <div class="date-filter">
+            <label for="access-date">Filtrar por data:</label>
+            <input type="date" id="access-date" onchange="loadAccessLogs(this.value)">
+          </div>
+        </div>
+
+        <div class="monitor-group">
+          <h3>Histórico de Acessos</h3>
+          <div id="access-logs" class="access-logs">
+            <!-- Eventos de acesso serão exibidos aqui -->
+          </div>
+        </div>
+      </section>
+
+      <script>
+        // Set today's date as default for the date filter
+        document.getElementById('access-date').value = new Date().toISOString().split('T')[0];
+      </script>
+
+      <div id="message"></div>
+    </main>
+
+    <!-- Success Modal Template -->
+    <div id="success-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Sucesso</h3>
+        </div>
+        <div class="modal-body">
+          <p id="success-message"></p>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeModal(this)">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generic Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title"></h3>
+        </div>
+        <div class="modal-body">
+        </div>
+      </div>
+    </div>
+
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+    <!-- Flatpickr CSS/JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Seu JS -->
+    <script src="main.js"></script>
+</body>
+
+</html>
