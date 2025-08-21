@@ -705,6 +705,28 @@ app.post("/terminal/network", async (req, res) => {
   }
 });
 
+// Novo endpoint em massa para configurar monitoramento em todos os terminais
+app.post("/terminal/configure-monitor", async (req, res) => {
+  if (terminalSessions.size === 0) {
+    return res.status(400).json({ error: "Nenhum terminal conectado" });
+  }
+  try {
+    const { hostname, port } = req.body || {};
+    const results = await makeRequestToAllTerminals('set_configuration', 'POST', {
+      monitor: {
+        request_timeout: "5000",
+        hostname: hostname || "192.168.100.210",
+        port: (port || "3000").toString(),
+        path: "api/notifications"
+      }
+    });
+    const successfulResults = results.filter(r => r.success);
+    res.json({ success: true, terminalsProcessed: successfulResults.length, totalTerminals: results.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Abrir secbox
 app.post("/terminal/open-secbox", async (req, res) => {
   if (terminalSessions.size === 0) {
